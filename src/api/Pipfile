@@ -4,8 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+fastapi = "*"
+uvicorn = "*"
+httpx = "*"
+google-cloud-storage = "*"
+python-dotenv = "*"
 
 [dev-packages]
+pytest = "*"
 
 [requires]
 python_version = "3.10"
