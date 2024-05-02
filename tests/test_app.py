@@ -1,13 +1,16 @@
-from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
-from src.api.app import app
+from unittest.mock import MagicMock, patch
+
 import pytest
+from fastapi.testclient import TestClient
+
+from src.api.app import app
 
 client = TestClient(app)
 
+
 def test_download_data():
     # Mock the storage.Client class
-    with patch('google.cloud.storage.Client') as MockClient:
+    with patch("google.cloud.storage.Client") as MockClient:
         # Mock the instance of the Client class
         mock_client_instance = MockClient.return_value
 
@@ -23,7 +26,7 @@ def test_download_data():
         mock_blob.upload_from_string.return_value = None
 
         # Mock the httpx.AsyncClient class
-        with patch('httpx.AsyncClient') as MockAsyncClient:
+        with patch("httpx.AsyncClient") as MockAsyncClient:
             # Mock the instance of the AsyncClient class
             mock_async_client_instance = MockAsyncClient.return_value
 
@@ -44,4 +47,6 @@ def test_download_data():
     assert response.status_code == 200
 
     # Assert that the response JSON is as expected
-    assert response.json() == {"message": "Data downloaded and uploaded successfully to GCS"}
+    assert response.json() == {
+        "message": "Data downloaded and uploaded successfully to GCS"
+    }

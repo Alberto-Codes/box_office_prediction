@@ -4,11 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+fastapi = "*"
+uvicorn = "*"
+httpx = "*"
+google-cloud-storage = "*"
 python-dotenv = "*"
 google-cloud = "*"
-google-cloud-storage = "*"
+google-cloud-bigquery = "*"
 
 [dev-packages]
+pytest = "*"
 black = "*"
 isort = "*"
 
