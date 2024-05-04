@@ -140,12 +140,13 @@ def load_file_to_bigquery(project_id, bigquery_client, dataset_id, file_name, bu
         autodetect=True,
         field_delimiter="\t",
         skip_leading_rows=1,
-        # source_format=bigquery.SourceFormat.TSV,
+        encoding="UTF-8",
+        null_marker=r"\N",
+        quote_character='',
     )
     uri=f"gs://{bucket.name}/{file_name}"
     table_name = file_name.replace(".tsv.gz", "").replace(".", "_").replace("raw-datasets/", "")
     table_id = f"{project_id}.{dataset_id}.{table_name}"
-    # table_id = f"{dataset_id}.{table_name}"
 
     # Load the data into BigQuery
     load_job = bigquery_client.load_table_from_uri(
