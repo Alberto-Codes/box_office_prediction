@@ -77,84 +77,82 @@ async def download_data():
     return {"message": "Data downloaded and uploaded successfully to GCS"}
 
 
-# Define the schema for each IMDb file
-schema_definitions = {
-    "name.basics": [
-        bigquery.SchemaField("nconst", "STRING"),
-        bigquery.SchemaField("primaryName", "STRING"),
-        bigquery.SchemaField("birthYear", "INTEGER"),
-        bigquery.SchemaField("deathYear", "INTEGER"),
-        bigquery.SchemaField("primaryProfession", "STRING", mode="REPEATED"),
-        bigquery.SchemaField("knownForTitles", "STRING", mode="REPEATED"),
-    ],
-    "title.akas": [
-        bigquery.SchemaField("titleId", "STRING"),
-        bigquery.SchemaField("ordering", "INTEGER"),
-        bigquery.SchemaField("title", "STRING"),
-        bigquery.SchemaField("region", "STRING"),
-        bigquery.SchemaField("language", "STRING"),
-        bigquery.SchemaField("types", "STRING", mode="REPEATED"),
-        bigquery.SchemaField("attributes", "STRING", mode="REPEATED"),
-        bigquery.SchemaField("isOriginalTitle", "BOOLEAN"),
-    ],
-    "title.basics": [
-        bigquery.SchemaField("tconst", "STRING"),
-        bigquery.SchemaField("titleType", "STRING"),
-        bigquery.SchemaField("primaryTitle", "STRING"),
-        bigquery.SchemaField("originalTitle", "STRING"),
-        bigquery.SchemaField("isAdult", "BOOLEAN"),
-        bigquery.SchemaField("startYear", "INTEGER"),
-        bigquery.SchemaField("endYear", "INTEGER"),
-        bigquery.SchemaField("runtimeMinutes", "INTEGER"),
-        bigquery.SchemaField("genres", "STRING", mode="REPEATED"),
-    ],
-    "title.crew": [
-        bigquery.SchemaField("tconst", "STRING"),
-        bigquery.SchemaField("directors", "STRING", mode="REPEATED"),
-        bigquery.SchemaField("writers", "STRING", mode="REPEATED"),
-    ],
-    "title.episode": [
-        bigquery.SchemaField("tconst", "STRING"),
-        bigquery.SchemaField("parentTconst", "STRING"),
-        bigquery.SchemaField("seasonNumber", "INTEGER"),
-        bigquery.SchemaField("episodeNumber", "INTEGER"),
-    ],
-    "title.principals": [
-        bigquery.SchemaField("tconst", "STRING"),
-        bigquery.SchemaField("ordering", "INTEGER"),
-        bigquery.SchemaField("nconst", "STRING"),
-        bigquery.SchemaField("category", "STRING"),
-        bigquery.SchemaField("job", "STRING"),
-        bigquery.SchemaField("characters", "STRING"),
-    ],
-    "title.ratings": [
-        bigquery.SchemaField("tconst", "STRING"),
-        bigquery.SchemaField("averageRating", "FLOAT"),
-        bigquery.SchemaField("numVotes", "INTEGER"),
-    ],
-}
+# # Define the schema for each IMDb file
+# schema_definitions = {
+#     "name.basics": [
+#         bigquery.SchemaField("nconst", "STRING"),
+#         bigquery.SchemaField("primaryName", "STRING"),
+#         bigquery.SchemaField("birthYear", "INTEGER"),
+#         bigquery.SchemaField("deathYear", "INTEGER"),
+#         bigquery.SchemaField("primaryProfession", "STRING", mode="REPEATED"),
+#         bigquery.SchemaField("knownForTitles", "STRING", mode="REPEATED"),
+#     ],
+#     "title.akas": [
+#         bigquery.SchemaField("titleId", "STRING"),
+#         bigquery.SchemaField("ordering", "INTEGER"),
+#         bigquery.SchemaField("title", "STRING"),
+#         bigquery.SchemaField("region", "STRING"),
+#         bigquery.SchemaField("language", "STRING"),
+#         bigquery.SchemaField("types", "STRING", mode="REPEATED"),
+#         bigquery.SchemaField("attributes", "STRING", mode="REPEATED"),
+#         bigquery.SchemaField("isOriginalTitle", "BOOLEAN"),
+#     ],
+#     "title.basics": [
+#         bigquery.SchemaField("tconst", "STRING"),
+#         bigquery.SchemaField("titleType", "STRING"),
+#         bigquery.SchemaField("primaryTitle", "STRING"),
+#         bigquery.SchemaField("originalTitle", "STRING"),
+#         bigquery.SchemaField("isAdult", "BOOLEAN"),
+#         bigquery.SchemaField("startYear", "INTEGER"),
+#         bigquery.SchemaField("endYear", "INTEGER"),
+#         bigquery.SchemaField("runtimeMinutes", "INTEGER"),
+#         bigquery.SchemaField("genres", "STRING", mode="REPEATED"),
+#     ],
+#     "title.crew": [
+#         bigquery.SchemaField("tconst", "STRING"),
+#         bigquery.SchemaField("directors", "STRING", mode="REPEATED"),
+#         bigquery.SchemaField("writers", "STRING", mode="REPEATED"),
+#     ],
+#     "title.episode": [
+#         bigquery.SchemaField("tconst", "STRING"),
+#         bigquery.SchemaField("parentTconst", "STRING"),
+#         bigquery.SchemaField("seasonNumber", "INTEGER"),
+#         bigquery.SchemaField("episodeNumber", "INTEGER"),
+#     ],
+#     "title.principals": [
+#         bigquery.SchemaField("tconst", "STRING"),
+#         bigquery.SchemaField("ordering", "INTEGER"),
+#         bigquery.SchemaField("nconst", "STRING"),
+#         bigquery.SchemaField("category", "STRING"),
+#         bigquery.SchemaField("job", "STRING"),
+#         bigquery.SchemaField("characters", "STRING"),
+#     ],
+#     "title.ratings": [
+#         bigquery.SchemaField("tconst", "STRING"),
+#         bigquery.SchemaField("averageRating", "FLOAT"),
+#         bigquery.SchemaField("numVotes", "INTEGER"),
+#     ],
+# }
 
 
 def load_file_to_bigquery(project_id, bigquery_client, dataset_id, file_name, bucket):
     job_config = bigquery.LoadJobConfig(
-        autodetect=True,
+        # autodetect=True,
         field_delimiter="\t",
         skip_leading_rows=1,
         encoding="UTF-8",
         null_marker=r"\N",
-        quote_character='',
+        quote_character="",
     )
-    uri=f"gs://{bucket.name}/{file_name}"
-    table_name = file_name.replace(".tsv.gz", "").replace(".", "_").replace("raw-datasets/", "")
+    uri = f"gs://{bucket.name}/{file_name}"
+    table_name = (
+        file_name.replace(".tsv.gz", "").replace(".", "_").replace("raw-datasets/", "")
+    )
     table_id = f"{project_id}.{dataset_id}.{table_name}"
 
     # Load the data into BigQuery
-    load_job = bigquery_client.load_table_from_uri(
-        uri, table_id, job_config=job_config
-    )
+    load_job = bigquery_client.load_table_from_uri(uri, table_id, job_config=job_config)
     load_job.result()  # Wait for the job to complete
-
-
 
 
 @app.post("/load-data-to-bigquery/")
@@ -178,7 +176,9 @@ async def load_data_to_bigquery():
 
     for file_name in dataset_files:
         file_name = f"raw-datasets/{file_name}"  # Add the subdirectory to the file name
-        load_file_to_bigquery(project_id, bigquery_client, dataset_id, file_name, bucket)
+        load_file_to_bigquery(
+            project_id, bigquery_client, dataset_id, file_name, bucket
+        )
 
     return {"message": "Data loaded successfully to BigQuery"}
 
